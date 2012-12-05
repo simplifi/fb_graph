@@ -20,7 +20,7 @@ module FbGraph
         )
 
         if options[:redownload]
-          merged_attrs = merged_attrs.merge(ad_account[:data][:campaigns][ad_campaign_id]).with_indifferent_access
+          merged_attrs = merged_attrs.merge(ad_account[:data][:adaccounts][ad_account_id]).with_indifferent_access
         end
 
         AdAccount.new ad_account_id, merged_attrs
