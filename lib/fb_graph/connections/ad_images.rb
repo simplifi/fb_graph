@@ -13,17 +13,23 @@ module FbGraph
       def ad_image!(options = {})
         ad_image = post options.merge(:connection => :adimages)
 
-        ad_image_id = ad_image[:id]
+       # No ID is contained in the response.
+        adimage_id = ad_image[:images].keys.first
+        hash = ad_image[:images].values.first[:hash]
+        url = ad_image[:images].values.first[:url]
 
         merged_attrs = options.merge(
-          :access_token => options[:access_token] || self.access_token
+          :access_token => options[:access_token] || self.access_token,
+          :hash => hash,
+          :url => url
         )
 
         if options[:redownload]
-          merged_attrs = merged_attrs.merge(ad_image[:data][:adimages][ad_image_id]).with_indifferent_access
+          merged_attrs = merged_attrs.merge(ad_image[:data][:adimages][adimage_id]).with_indifferent_access
         end
-
-        AdImage.new ad_image_id, merged_attrs
+	
+	# The first argument is the identifier, which is appended to the endpoint
+        AdImage.new adimage_id, merged_attrs
       end
     end
   end
