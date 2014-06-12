@@ -1,10 +1,9 @@
 module FbGraph
   class TaggedObject < Node
-    attr_accessor :name, :offset, :length, :raw_attributes
+    attr_accessor :name, :offset, :length
 
     def initialize(identifier, attributes = {})
       super
-      @raw_attributes = attributes
       [:name, :offset, :length].each do |key|
         self.send("#{key}=", attributes[key])
       end
@@ -12,7 +11,9 @@ module FbGraph
 
     def fetch_with_class_determination
       attributes = fetch_without_class_determination.raw_attributes
-      klass = if attributes[:category]
+      klass = if attributes[:namespace]
+        Application
+      elsif attributes[:category]
         Page
       else
         User

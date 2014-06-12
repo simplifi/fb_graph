@@ -4,11 +4,32 @@ require 'patch/rack/oauth2/util'
 require 'patch/rack/oauth2/client'
 require 'patch/rack/oauth2/access_token'
 
+
 module FbGraph
   VERSION = ::File.read(
     ::File.join(::File.dirname(__FILE__), '../VERSION')
   ).delete("\n\r")
-  ROOT_URL = "https://graph.facebook.com"
+  ROOT_URL = 'https://graph.facebook.com'
+
+  def self.v1!
+    @v2 = false
+  end
+  def self.v2!
+    @v2 = true
+  end
+  def self.v1?
+    !v2?
+  end
+  def self.v2?
+    !!@v2
+  end
+  def self.root_url
+    if self.v2?
+      File.join(ROOT_URL, 'v2.0')
+    else
+      ROOT_URL
+    end
+  end
 
   def self.logger
     @@logger
@@ -45,7 +66,8 @@ module FbGraph
     _http_client_ = HTTPClient.new(
       :agent_name => "FbGraph (#{VERSION})"
     )
-    _http_client_.request_filter << Debugger::RequestFilter.new if debugging?
+    _http_client_.request_filter << RequestFilters::Scrubber.new
+    _http_client_.request_filter << RequestFilters::Debugger.new if debugging?
     http_config.try(:call, _http_client_)
     _http_client_
   end
@@ -56,7 +78,7 @@ module FbGraph
 end
 
 require 'fb_graph/exception'
-require 'fb_graph/debugger'
+require 'fb_graph/request_filters'
 
 require 'fb_graph/auth'
 require 'fb_graph/comparison'
@@ -67,6 +89,8 @@ require 'fb_graph/connections'
 require 'fb_graph/searchable'
 
 require 'fb_graph/action'
+require 'fb_graph/age_range'
+require 'fb_graph/device'
 require 'fb_graph/education'
 require 'fb_graph/location'
 require 'fb_graph/picture'
@@ -132,6 +156,8 @@ require 'fb_graph/thread'
 require 'fb_graph/user'
 require 'fb_graph/user_achievement'
 require 'fb_graph/video'
+require 'fb_graph/offer'
+require 'fb_graph/review'
 
 # Load after FbGraph::User
 require 'fb_graph/ad_user'

@@ -2,6 +2,8 @@
 
 A full-stack Facebook Graph API wrapper in Ruby.
 
+{<img src="https://secure.travis-ci.org/nov/fb_graph.png" />}[http://travis-ci.org/nov/fb_graph]
+
 == Installation
 
   gem install fb_graph
@@ -12,6 +14,13 @@ A full-stack Facebook Graph API wrapper in Ruby.
 * Report Issues on GitHub (https://github.com/nov/fb_graph/issues)
 * Subscribe Update Info (https://www.facebook.com/FbGraph)
 * Q&A on Google Groups (http://groups.google.com/group/fb_graph)
+
+== Graph API v2.0
+
+FbGraph is basically developed for v1.0, and could be buggy for v2.0.
+
+Along with adding v2 support to this gem, I also started to develop fb_graph2 as Graph API v2.0 client library.
+https://github.com/nov/fb_graph2
 
 == Examples
 
@@ -58,7 +67,7 @@ https://github.com/nov/fb_graph/wiki
   user.tagged
   user.family
   :
-  
+
   # Private connections requires "access_token"
   FbGraph::User.new('matake').friends # => raise FbGraph::Unauthorized
   user = FbGraph::User.fetch('matake', :access_token => ACCESS_TOKEN)
@@ -67,11 +76,21 @@ https://github.com/nov/fb_graph/wiki
   user.friends
   user.likes
   :
-  
+
   # "home" connection is only available for "me"
   me = User.new('me', :access_token => ACCESS_TOKEN)
   me.home
   :
+
+By default, FbGraph will only return the default fields. In order to
+get a non-default field, you have to supply the connect with an options hash
+specifying the field. An example for events:
+
+  user.events({:fields => "owner,name,description,picture"}) # { and } optional
+
+An overview of which fields you can include in the graph API can be found at
+https://developers.facebook.com/docs/reference/api/, which has a description
+of the specific objects fields in the sidebar under "Objects".
 
 ==== Search
 
@@ -265,7 +284,7 @@ See GitHub wiki for more examples.
 https://github.com/nov/fb_graph/wiki
 
 == Note on Patches/Pull Requests
- 
+
 * Fork the project.
 * Make your feature addition or bug fix.
 * Add tests for it. This is important so I don't break it in a

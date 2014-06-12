@@ -1,7 +1,11 @@
-if RUBY_VERSION >= '1.9'
-  require 'cover_me'
+require 'simplecov'
+
+SimpleCov.start do
+  add_filter 'spec'
 end
 
 require 'rspec'
 require 'fb_graph'
-require 'helpers/webmock_helper'
+require 'fb_graph/mock'
+include FbGraph::Mock
+WebMock.disable_net_connect!

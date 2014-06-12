@@ -11,6 +11,7 @@ module FbGraph
     include Connections::Subscriptions
     include Connections::TestUsers
     include Connections::Videos
+    include Connections::Reviews
     include OpenGraph::ApplicationContext
 
     @@attributes = [
@@ -96,6 +97,7 @@ module FbGraph
       auth = Auth.new(self.identifier, self.secret)
       self.access_token = auth.client.access_token! :client_auth_body
     end
+    alias_method :app_access_token, :get_access_token
 
     def access_token_with_auto_fetch
       access_token_without_auto_fetch ||
@@ -113,6 +115,10 @@ module FbGraph
         )
       end
       _input_token_.introspect access_token
+    end
+
+    def self.app(access_token)
+      new("app", :access_token => access_token)
     end
   end
 end

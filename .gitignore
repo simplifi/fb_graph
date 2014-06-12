@@ -16,10 +16,14 @@ tmtags
 ## RVM
 .rvmrc
 
+## Bundler
+.bundle
+
 ## PROJECT::GENERAL
 coverage*
 rdoc
 pkg
+Gemfile.lock
 
 ## PROJECT::SPECIFIC
 .rbenv-version

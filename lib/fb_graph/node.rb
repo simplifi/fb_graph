@@ -8,7 +8,7 @@ module FbGraph
 
     def initialize(identifier, attributes = {})
       @identifier         = identifier
-      @endpoint           = File.join(ROOT_URL, identifier.to_s)
+      @endpoint           = File.join(FbGraph.root_url, identifier.to_s)
       @access_token       = attributes[:access_token]
       @raw_attributes     = attributes
       @cached_collections = {}
@@ -90,7 +90,11 @@ module FbGraph
     alias_method :cache_collection, :cache_collections
 
     def build_endpoint(params = {})
-      File.join([self.endpoint, params.delete(:connection), params.delete(:connection_scope)].compact.collect(&:to_s))
+      _endpoint_ = URI.parse self.endpoint
+      if api_version = params.delete(:api_version)
+        _endpoint_.path = File.join('/', api_version, _endpoint_.path)
+      end
+      File.join([_endpoint_.to_s, params.delete(:connection), params.delete(:connection_scope)].compact.collect(&:to_s))
     end
 
     def build_params(params)
@@ -135,14 +139,34 @@ module FbGraph
       when 'null'
         nil
       else
-        _response_ = JSON.parse(response.body).with_indifferent_access
+        _response_ = if response.body =~ /^"/
+          # NOTE:
+          #  Only for comment.reply!, which returns an identifier as String.
+          #  Once the API spec changed (I guess FB will do so), we can call "with_indifferent_access" for all response.
+          # NOTE:
+          #  When MultiJson.engine is JsonGem, parsing JSON String fails.
+          #  You should handle this case without MultiJson.
+          response.body.gsub('"', '')
+        else
+          hash_or_array = MultiJson.load(response.body)
+          case hash_or_array
+          when Hash
+            hash_or_array.with_indifferent_access
+          when Array
+            # NOTE:
+            #  I think this case is FB's bug though.
+            #  ref) https://github.com/nov/fb_graph/issues/350
+            hash_or_array.collect(&:with_indifferent_access)
+          end
+        end
+
         if (200...300).include?(response.status)
           _response_
         else
-          Exception.handle_httpclient_error(_response_, response.headers)
+          Exception.handle_structured_response(response.status, _response_, response.headers)
         end
       end
-    rescue JSON::ParserError
+    rescue MultiJson::DecodeError
       raise Exception.new(response.status, "Unparsable Response: #{response.body}")
     end
   end

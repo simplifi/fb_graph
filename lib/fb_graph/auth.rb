@@ -8,7 +8,7 @@ module FbGraph
       @client = Rack::OAuth2::Client.new(
         :identifier             => client_id,
         :secret                 => client_secret,
-        :host                   => URI.parse(ROOT_URL).host,
+        :host                   => URI.parse(FbGraph.root_url).host,
         :authorization_endpoint => '/oauth/authorize',
         :token_endpoint         => '/oauth/access_token',
         :redirect_uri           => options[:redirect_uri]
@@ -56,7 +56,7 @@ module FbGraph
       self.access_token = client.access_token! :client_auth_body
       self
     rescue Rack::OAuth2::Client::Error => e
-      Exception.handle_rack_oauth2_error e
+      Exception.handle_response e.status, e.message
     end
 
     private
@@ -69,7 +69,7 @@ module FbGraph
       self.user = User.new(data[:user_id], :access_token => access_token)
       self
     rescue Rack::OAuth2::Client::Error => e
-      Exception.handle_rack_oauth2_error e
+      Exception.handle_response e.status, e.message
     end
 
     def build_access_token(data)

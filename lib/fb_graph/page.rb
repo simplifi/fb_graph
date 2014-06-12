@@ -24,6 +24,7 @@ module FbGraph
     include Connections::Tabs
     include Connections::Tagged
     include Connections::Videos
+    include Connections::Offers
     extend Searchable
 
     @@attributes = {
@@ -44,6 +45,12 @@ module FbGraph
         Cover.new cover[:cover_id], cover
       end
     end
+
+    def get_access_token(options = {})
+      access_token = get options.merge(:fields => "access_token")
+      self.access_token = Rack::OAuth2::AccessToken::Legacy.new access_token
+    end
+    alias_method :page_access_token, :get_access_token
   end
 end
 

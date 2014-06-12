@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe FbGraph::Connections::Comments, '#comments' do
-  context 'when included by FbGraph::Post' do
+describe FbGraph::Connections::Comments do
+  describe '#comments' do
     let :post do
       mock_graph :get, 'no_comments', 'posts/no_comments' do
         FbGraph::Post.new('no_comments').fetch
@@ -36,10 +36,8 @@ describe FbGraph::Connections::Comments, '#comments' do
       end
     end
   end
-end
 
-describe FbGraph::Connections::Comments, '#comment!' do
-  context 'when included by FbGraph::Post' do
+  describe '#comment!' do
     context 'when no access_token given' do
       it 'should raise FbGraph::Exception' do
         mock_graph :post, '12345/comments', 'posts/comments/post_without_access_token', :status => [500, 'Internal Server Error'] do
@@ -68,6 +66,42 @@ describe FbGraph::Connections::Comments, '#comment!' do
           comment.access_token.should == 'valid'
           comment.message.should == 'hello'
           comment.access_token.should == 'valid'
+        end
+      end
+    end
+  end
+
+  describe '#reply!' do
+    context 'when no access_token given' do
+      it 'should raise FbGraph::Exception' do
+        mock_graph :post, '12345/comments', 'comments/comments/post_without_access_token', :status => [500, 'Internal Server Error'] do
+          lambda do
+            FbGraph::Post.new('12345').reply!(:message => 'hello')
+          end.should raise_exception(FbGraph::Exception)
+        end
+      end
+    end
+
+    context 'when invalid access_token is given' do
+      it 'should raise FbGraph::Exception' do
+        mock_graph :post, '12345/comments', 'comments/comments/post_with_invalid_access_token', :access_token => 'invalid', :params => {
+          :message => 'hello'
+        }, :status => [500, 'Internal Server Error'] do
+          lambda do
+            FbGraph::Post.new('12345', :access_token => 'invalid').reply!(:message => 'hello')
+          end.should raise_exception(FbGraph::Exception)
+        end
+      end
+    end
+
+    context 'when valid access_token is given' do
+      it 'should return generated comment' do
+        mock_graph :post, '12345/comments', 'comments/comments/post_with_valid_access_token', :access_token => 'valid', :params => {
+          :message => 'hello'
+        } do
+          reply = FbGraph::Comment.new('12345', :access_token => 'valid').reply!(:message => 'hello')
+          reply.should be_instance_of FbGraph::Comment
+          reply.identifier.should == '10151705618661509_29549300'
         end
       end
     end
