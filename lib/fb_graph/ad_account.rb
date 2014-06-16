@@ -9,6 +9,7 @@ module FbGraph
     include Connections::AdConnectionObjects
     include Connections::AdPreviews
     include Connections::AdImages
+    include Connections::AdCreditLine
 
     ATTRS = [
       :account_id,
